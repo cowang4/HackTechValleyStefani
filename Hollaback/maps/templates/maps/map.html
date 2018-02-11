@@ -18,11 +18,9 @@
 </head>
 <body>
 <div class="wrapper">
-  <input type="checkbox" id="navigationCB" />
-  <label for="navigationCB">
-    <span></span>
-    <span></span>
-    <span></span>
+  <input type="checkbox" id="navigationCB"/>
+  <label for="navigationCB" class="navButton">
+    &#11166;
   </label>
   <nav>
     <ul>
@@ -296,6 +294,16 @@ for (let vehicleID of vehicleIDs)
   layerButtons.appendChild(button);
 }
 
+$('#navigationCB').click(function() {
+  if ($(this)[0].checked == true) {
+    $('label.navButton').html('&#11164;');
+    console.log("checked");
+  }
+  else {
+    $('label.navButton').html('&#11166;');
+    console.log("unchecked");
+  }
+});
 
 $(document).ready(function() {
 });
