@@ -4,6 +4,7 @@
     <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
     <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
     <script src='GPSdata.js'></script>
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css">
     <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.44.0/mapbox-gl.js'></script>
     <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.44.0/mapbox-gl.css' rel='stylesheet' />
     <script src='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-directions/v3.1.1/mapbox-gl-directions.js'></script>
@@ -25,8 +26,13 @@
       </li>
     </ul>
   </nav>
+  <div class="autocomplete">
+  <input id='addressinput' name='addressinput' type="text" placeholder="Address.." />
+  </div>
   <div id='map'></div>
 </div>
+<script src="https://code.jquery.com/jquery-3.2.1.min.js" crossorigin="anonymous"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 <script>
 
 mapboxgl.accessToken = 'pk.eyJ1IjoiY293YW5nNCIsImEiOiJjamRodHYxZHAxMHF3MnBvMWM4cmF0Y29vIn0.g8Wb-swsy8VeQOISY8iOgw';
@@ -118,7 +124,14 @@ map.on('load', function(){
   */
 })
 
+$( "#addressinput" ).autocomplete({
+  source: function(request, response) {
+    var term = request.term;
+    var result = GPSdata.filter(
 
+    response(result);
+  },
+});
 </script>
 
 </body>
