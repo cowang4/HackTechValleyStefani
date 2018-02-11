@@ -1,0 +1,75 @@
+body {
+  margin: 0;
+  padding: 0;
+}
+
+.wrapper{
+    overflow:hidden;
+}
+
+#map {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 100%;
+  transition: all .2s ease-in;
+}
+
+label{
+    display:block;
+    background:#000;
+    width:42px;
+    height:42px;
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    transition: all 200ms ease-in;
+    z-index: 500;
+    cursor: pointer;
+}
+
+#navigationCB {
+  display: none;
+}
+
+#navigationCB:checked ~ nav{
+    margin:0;
+}
+#navigationCB:checked ~ label{
+    left:260px;
+}
+#navigationCB:checked ~ #map{
+    transform: translate3d(250px, 0, 0);
+}
+
+nav {
+  position:fixed;
+  top:0;
+  left:0;
+  width:250px;
+  height:100%;
+  margin:0 0 0 -250px;
+  transition: all .2s ease-in;
+}
+
+nav ul{
+    width:250px;
+    height:100%;
+    padding:0;
+    margin:0;
+    list-style:none;
+    background:#7BC7CE;
+    overflow:hidden;
+}
+nav li{
+    margin:0;
+    font-family: Open Sans;
+    height: 2em;
+    line-height: 2em;
+    padding: .3em;
+}
+
+nav li:hover {
+  background-color: rgba(0, 0, 0, .2);
+  cursor: pointer;
+}

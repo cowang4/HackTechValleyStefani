@@ -6,25 +6,26 @@
     <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.44.0/mapbox-gl.js'></script>
     <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.44.0/mapbox-gl.css' rel='stylesheet' />
     <script src='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-directions/v3.1.1/mapbox-gl-directions.js'></script>
-<link rel='stylesheet' href='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-directions/v3.1.1/mapbox-gl-directions.css' type='text/css' />
-    <style>
-      body {
-        margin: 0;
-        padding: 0;
-      }
-
-      #map {
-        position: absolute;
-        top: 0;
-        bottom: 0;
-        width: 100%;
-      }
-    </style>
+    <link rel='stylesheet' href='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-directions/v3.1.1/mapbox-gl-directions.css' type='text/css' />
+    <link rel='stylesheet' href='map.css' type='text/css' />
 </head>
 <body>
-
-<div id='map'></div>
-
+<div class="wrapper">
+  <input type="checkbox" id="navigationCB" />
+  <label for="navigationCB">
+    <span></span>
+    <span></span>
+    <span></span>
+  </label>
+  <nav>
+    <ul>
+      <li>
+        Notifications
+      </li>
+    </ul>
+  </nav>
+  <div id='map'></div>
+</div>
 <script>
 
 mapboxgl.accessToken = 'pk.eyJ1IjoiY293YW5nNCIsImEiOiJjamRodHYxZHAxMHF3MnBvMWM4cmF0Y29vIn0.g8Wb-swsy8VeQOISY8iOgw';
@@ -89,7 +90,7 @@ function line() {
 
   var directions = new MapboxDirections({
     accessToken: mapboxgl.accessToken,
-    profile: 'mapbox/driving-traffic',
+    profile: 'driving-traffic',
     congestion: true,
     controls: {
       inputs: false,
