@@ -32,6 +32,7 @@ body {
 .layerButton, .navButton {
   width: 40px;
   height: 40px;
+  margin-bottom: 2px;
   font-family: Roboto, sans-serif;
   box-sizing: border-box;
   height: 36px;
