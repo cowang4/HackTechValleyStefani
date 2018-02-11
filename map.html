@@ -303,6 +303,33 @@ function line() {
         }
       });
 
+    map.on('click', vehicleID+"truck", function(e) {
+      console.log(e);
+      var canvasid = e.features[0].layer.id;
+      $('.layerButton').filter(function () {
+        return this.innerHTML == canvasid;
+      }).click();
+    });
+    map.on('click', vehicleID, function(e) {
+      console.log(e);
+      var canvasid = e.features[0].layer.id;
+      $('.layerButton').filter(function () {
+        return this.innerHTML == canvasid;
+      }).click();
+    });
+    map.on('mouseenter', vehicleID, function() {
+        map.getCanvas().style.cursor = 'pointer';
+    });
+    map.on('mouseenter', vehicleID+"truck", function() {
+        map.getCanvas().style.cursor = 'pointer';
+    });
+    map.on('mouseleave', vehicleID, function() {
+        map.getCanvas().style.cursor = '';
+    });
+    map.on('mouseleave', vehicleID+"truck", function() {
+        map.getCanvas().style.cursor = '';
+    });
+
     // timed loop for updating truck progress
     // loops are staggered for each line so that they update at separate times
     const timeStagger = 25;
