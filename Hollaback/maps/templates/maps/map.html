@@ -5,8 +5,6 @@
     <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
     <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.44.0/mapbox-gl.js'></script>
     <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.44.0/mapbox-gl.css' rel='stylesheet' />
-    <script src='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-directions/v3.1.1/mapbox-gl-directions.js'></script>
-<link rel='stylesheet' href='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-directions/v3.1.1/mapbox-gl-directions.css' type='text/css' />
     <style>
       body {
         margin: 0;
@@ -23,6 +21,8 @@
 </head>
 <body>
 
+<script src='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-directions/v3.1.1/mapbox-gl-directions.js'></script>
+<link rel='stylesheet' href='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-directions/v3.1.1/mapbox-gl-directions.css' type='text/css' />
 <div id='map'></div>
 
 <script>
@@ -87,26 +87,34 @@ function line() {
     }
   });
 
-  var directions = new MapboxDirections({
-    accessToken: mapboxgl.accessToken,
-    profile: 'mapbox/driving-traffic',
-    congestion: true,
-    controls: {
-      inputs: false,
-      instructions: false,
-      profileSwitcher: false,
-    }
-  });
-  directions.setOrigin([-122.48369693756104, 37.83381888486939]);
-  directions.setDestination([-122.49378204345702, 37.83368330777276]);
-  
-  map.addControl(directions, 'top-left');
 
 }
 
 map.on('load', function(){
   ease();
   line();
+
+  /*
+  var directionsObj = new MapboxDirections({
+    accessToken: mapboxgl.accessToken,
+    profile: 'driving',
+    congestion: false,
+    interactive: false,
+    geometries: 'geojson',
+    alternatives: false,
+    controls: {
+      //inputs: false,
+      //instructions: false,
+      //profileSwitcher: false,
+    },
+  });
+  directionsObj.on('route', function({route}) {
+    console.log(route);
+  });
+  directionsObj.setOrigin([-122.48369693756104, 37.83381888486939]);
+  directionsObj.setDestination([-122.49378204345702, 37.83368330777276]);
+  map.addControl(directionsObj, 'top-left');
+  */
 })
 
 // code from the next step will go here!
