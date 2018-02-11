@@ -538,6 +538,16 @@ $('#navigationCB').click(function() {
   }
 });
 
+function handleVisibilityChange() {
+  if (document.hidden) {
+    clock.stop();
+  } else  {
+    clock.start();
+  }
+}
+
+document.addEventListener("visibilitychange", handleVisibilityChange, false);
+
 </script>
 
 </body>

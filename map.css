@@ -116,6 +116,7 @@ nav ul{
     list-style:none;
     background:#7BC7CE;
     overflow:hidden;
+    box-shadow: inset 0px 0px 15px 0px rgba(0, 0, 0, 0.15);
 }
 
 a {
@@ -123,18 +124,22 @@ a {
 }
 
 nav li{
-    margin:0;
     font-family: Open Sans;
     height: 2em;
     line-height: 2em;
-    padding: .3em;
+    padding: .4em .6em;
     color: black;
     text-decoration: none;
+    border-bottom: 1px solid #333333b3;
 }
 
 nav li:hover {
   background-color: rgba(0, 0, 0, .2);
   cursor: pointer;
+}
+
+nav li:active {
+    background-color: rgba(0, 0, 0, .15);
 }
 
 .autocomplete {
