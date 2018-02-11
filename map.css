@@ -184,8 +184,10 @@ li:hover > .submenu {
   transform: scale(1.06);
 }
 
-.st0 {
-  
+.helpText {
+  display: block;
+  font-size: 11pt;
+  padding-left:  .5em;
 }
 
 .autocomplete {
