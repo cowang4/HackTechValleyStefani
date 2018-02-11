@@ -45,7 +45,7 @@
 var vehicleIDs = Object.keys(GPSdata);
 
 
-var clock = Timetravel.Clock({time: 39600000, speed: 150});
+var clock = Timetravel.Clock({time: 39600000, speed: 75});
 var coolock = new Coolock({size: 100});
 
 function compareTimes(date1, date2)
@@ -88,10 +88,9 @@ function ease() {
   map.easeTo({bearing:0, duration: duration ? 0 : 5000, pitch:50, zoom:13});
 }
 
-var truckUpdates = [];
-function animateTruck(truckID, newCoords) {
-  let x = newCoords[0][0];
-  let y = newCoords[0][1];
+function animateTruck(truckID, newCoords, fraction) {
+  let x = newCoords[0][0] + (newCoords[newCoords.length - 1][0] - newCoords[0][0]) * fraction;
+  let y = newCoords[0][1] + (newCoords[newCoords.length - 1][1] - newCoords[0][1]) * fraction;
   map.getSource(truckID).setData({
     "type": "FeatureCollection",
     "features": [{
@@ -103,21 +102,16 @@ function animateTruck(truckID, newCoords) {
     }]
   });
 
-  if (newCoords.length > 1)
+  if (fraction < 1)
   {
-    truckUpdates.push({ "truckID": truckID, "coords": newCoords.splice(1)});
+    window.requestAnimationFrame(() => {
+      animateTruck(truckID, newCoords, fraction + .2);
+    });
   }
+
 }
 
 var clock_label = $('#clockLabel');
-
-function truckUpdate() {
-  for (let truckUpdate of truckUpdates)
-    animateTruck(truckUpdate.truckID, truckUpdate.coords);
-
-  truckUpdates = [];
-  window.requestAnimationFrame(() => {truckUpdate});
-}
 
 function line() {
   const colors = ["#ff0000", "#ff6f00", "#ffdd00", "#b2ff00", "#44ff00", "#00ff2b", "#00ff99", "#00f7ff", "#0088ff", "#0019ff", "#5500ff", "#c400ff", "#ff00cc", "#ff005e"];
@@ -209,7 +203,7 @@ function line() {
 
     // timed loop for updating truck progress
     // loops are staggered for each line so that they update at separate times
-    const timeStagger = 50;
+    const timeStagger = 25;
     let dataIndex = 0;
     let lineUpdate = () =>
     {
@@ -220,7 +214,7 @@ function line() {
         else
           location.reload(true);
 
-        
+
       }
 
       if (dataIndex === events.length - 1)
@@ -276,7 +270,7 @@ function line() {
             }
           );
 
-          animateTruck(vehicleID + "truck", coords.slice(startingIndex + 1, dataIndex + 1));
+          animateTruck(vehicleID + "truck", coords.slice(startingIndex, dataIndex + 1), 0);
         }
 
         clock_label.html(str_time(currentTime));
@@ -284,7 +278,6 @@ function line() {
       }
 
       window.setTimeout(lineUpdate, vehicleIDs.length * timeStagger);
-      truckUpdate();
     };
 
     window.setTimeout(lineUpdate, i * timeStagger);
