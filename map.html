@@ -36,7 +36,7 @@
             <label id='locationLabel' for='location'>Location:</label><input id='location' type='text' placeholder='800 Main Ave Schenectady, NY'>
         </div>
         <div class="modal-footer">
-          <input type="submit" class="btn btn-primary" value="Submit">
+          <input type="button" class="btn btn-primary" id="formSubmitButton" value="Submit">
           <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
         </div>
       </form>
@@ -611,10 +611,10 @@ function handleVisibilityChange() {
 
 document.addEventListener("visibilitychange", handleVisibilityChange, false);
 
-$('#reportForm').submit(function(eventObj) {
+$('#formSubmitButton').click(function(eventObj) {
   eventObj.preventDefault();
-  var reportIssue = eventObj.target[0].value;
-  var reportLoc = eventObj.target[1].value;
+  var reportIssue = $('#issue').val();
+  var reportLoc = $('#location').val();
   $('#reportModal').modal('hide');
   $.ajax({
     method: 'GET',
