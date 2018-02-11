@@ -4,7 +4,7 @@
     <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
     <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
     <script src='GPSdata.js'></script>
-    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css">
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css">
     <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.44.0/mapbox-gl.js'></script>
     <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.44.0/mapbox-gl.css' rel='stylesheet' />
     <script src='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-directions/v3.1.1/mapbox-gl-directions.js'></script>
@@ -28,6 +28,7 @@
   </nav>
   <div class="autocomplete">
     <input id='addressinput' name='addressinput' type="text" placeholder="Address.." />
+    Estimated Arrival Time: <span id="arrival_time"></span>
   </div>
   <div id='map'></div>
     <div id="LayerButtons"></div>
@@ -49,7 +50,7 @@ var map = new mapboxgl.Map({
 });
 
 function ease() {
-  map.easeTo({bearing:0, duration:10000, pitch:50, zoom:13});
+  map.easeTo({bearing:0, duration:5000, pitch:50, zoom:13});
 }
 
 function line() {
@@ -117,13 +118,57 @@ map.on('load', function(){
   */
 })
 
-$( "#addressinput" ).autocomplete({
+var allEvents = [];
+for (let i = 0; i < vehicleIDs.length; i++)
+{
+  allEvents = allEvents.concat(GPSdata[vehicleIDs[i]]);
+}
+
+$("#addressinput").autocomplete({
   source: function(request, response) {
     var term = request.term;
-    var result = GPSdata;
-
+    var matches = allEvents.filter(evnt => evnt.Location.toLowerCase().includes(term.toLowerCase()));
+    var result = matches.map(x => x.Location);
     response(result);
   },
+});
+
+var address_event = null;
+
+$("#addressinput").on("autocompleteselect", function(event, ui) {
+  var val = ui.item.value;
+  address_event = allEvents.filter(evnt => evnt.Location == val)[0];
+  var time = new Date(Date.parse(address_event.StartTime));
+  if (time.getHours() >= 12) {
+    $('#arrival_time').html(time.getHours()+':'+time.getMinutes()+' PM');
+  }
+  else {
+    $('#arrival_time').html(('0'+time.getHours()).slice(-2)+':'+('0'+time.getMinutes()).slice(-2)+' AM');
+  }
+
+  var current_time = new Date('2018-2-1T05:00:00');
+  var v_id = address_event.VehicleID;
+  var route = GPSdata[v_id];
+  var most_recent = route.filter(evnt => Date.parse(evnt.StartTime) > current_time)[0];
+  $.ajax({
+    method: 'GET',
+    url: `https://api.mapbox.com/directions/v5/mapbox/driving-traffic/${most_recent.Longitude},${most_recent.Latitude};${address_event.Longitude},${address_event.Latitude}`,
+    data: {
+      access_token: mapboxgl.accessToken,
+      overview: 'full',
+      annotations: 'duration,congestion'
+    },
+    dataType: 'json',
+    success: function(data, tstatus, xhr) {
+      console.log(data);
+      var congestion = data.routes[0].legs[0].annotation.congestion
+    },
+    error: function(xhr, tstatus, error) {
+      console.log(error);
+      console.log(tstatus);
+      console.log(xhr);
+    }
+  });
 });
 
 // Add toggleable layer buttons
