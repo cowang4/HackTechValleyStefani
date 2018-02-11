@@ -4,7 +4,7 @@
     <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
     <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
     <script src='GPSdata.js'></script>
-    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css">
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css">
     <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.44.0/mapbox-gl.js'></script>
     <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.44.0/mapbox-gl.css' rel='stylesheet' />
     <script src='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-directions/v3.1.1/mapbox-gl-directions.js'></script>
@@ -141,16 +141,36 @@ for (let vehicleID of vehicleIDs)
     if (button.classList.contains("disabled"))
     {
       button.classList.remove("disabled");
-      map.setLayoutProperty(layerID, "visibility", "none");
+      map.setLayoutProperty(layerID, "visibility", "visible");
     }
     else
     {
       button.classList.add("disabled");
-      map.setLayoutProperty(layerID, "visibility", "visible");
+      map.setLayoutProperty(layerID, "visibility", "none");
     }
   });
 
-  layerButtons
+  button.addEventListener("mouseenter", (evt) => {
+    let layerID = button.textContent;
+    evt.preventDefault();
+    for (let vehicleID of vehicleIDs)
+    {
+      if (vehicleID != layerID)
+        map.setPaintProperty(vehicleID, "line-opacity", 0.1);
+    }
+  });
+
+  button.addEventListener("mouseleave", (evt) => {
+    let layerID = button.textContent;
+    evt.preventDefault();
+    for (let vehicleID of vehicleIDs)
+    {
+      if (vehicleID != layerID)
+        map.setPaintProperty(vehicleID, "line-opacity", 1);
+    }
+  });
+
+  layerButtons.appendChild(button);
 }
 
 </script>
