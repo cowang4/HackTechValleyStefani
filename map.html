@@ -43,12 +43,7 @@
 var vehicleIDs = Object.keys(GPSdata);
 
 
-var clock = Timetravel.Clock({time: 32400000, speed: 150});
-clock.on("timechange", () =>
-{
-  if (this.time() > 54000000)
-    clock.time(54000000);
-});
+var clock = Timetravel.Clock({time: 39600000, speed: 150});
 var coolock = new Coolock({size: 100});
 
 function compareTimes(date1, date2)
@@ -80,6 +75,28 @@ var map = new mapboxgl.Map({
 
 function ease() {
   map.easeTo({bearing:0, duration:5000, pitch:50, zoom:13});
+}
+
+function animateTruck(truckID, newCoords) {
+  let x = newCoords[0][0];
+  let y = newCoords[0][1];
+  map.getSource(truckID).setData({
+    "type": "FeatureCollection",
+    "features": [{
+        "type": "Feature",
+        "geometry": {
+            "type": "Point",
+            "coordinates": [x, y]
+        }
+    }]
+  });
+
+  if (newCoords.length > 1)
+  {
+    window.setTimeout(() => {
+      animateTruck(truckID, newCoords.splice(1))
+    }, 10);
+  }
 }
 
 function line() {
@@ -144,12 +161,43 @@ function line() {
       }
     });
 
+    map.addLayer(
+      {
+        "id": vehicleID + "truck",
+        "source": {
+            "type": "geojson",
+            "data":
+            {
+              "type": "FeatureCollection",
+              "features": [{
+                  "type": "Feature",
+                  "geometry": {
+                      "type": "Point",
+                      "coordinates": coords[0]
+                  }
+              }]
+            }
+          },
+        "type": "symbol",
+        "layout": {
+          "icon-image": "garbagetruck",
+          "icon-allow-overlap": true,
+          "icon-size": 0.25
+        }
+      });
+
     // timed loop for updating truck progress
     // loops are staggered for each line so that they update at separate times
-    const timeStagger = 100;
+    const timeStagger = 50;
     let dataIndex = 0;
     let lineUpdate = () =>
     {
+      if (clock.time() >= 54000000)
+      {
+        clock.time(39600000);
+        dataIndex = events.length - 1;
+      }
+
       if (dataIndex === events.length - 1)
       {
         dataIndex = 0;
@@ -163,9 +211,21 @@ function line() {
               }
           }
         );
+
+        map.getSource(vehicleID).setData({
+          "type": "FeatureCollection",
+          "features": [{
+              "type": "Feature",
+              "geometry": {
+                  "type": "Point",
+                  "coordinates": coords[0]
+              }
+          }]
+        });
       }
       else
       {
+        let startingIndex = dataIndex;
         let update = false;
         let currentTime = new Date(clock.time());
         let eventTime = new Date(events[dataIndex].StartTime);
@@ -190,6 +250,8 @@ function line() {
                 }
             }
           );
+
+          animateTruck(vehicleID + "truck", coords.slice(startingIndex + 1, dataIndex + 1));
         }
 
       }
@@ -198,6 +260,12 @@ function line() {
     };
 
     window.setTimeout(lineUpdate, i * timeStagger);
+  }
+
+  // Move all trucks to the top!
+  for (let i = vehicleIDs.length - 1; i >= 0; i--)
+  {
+    map.moveLayer(vehicleIDs[i] + "truck");
   }
 }
 
@@ -242,7 +310,11 @@ function buildings() {
 
 map.on('load', function(){
   ease();
-  line();
+  map.loadImage('https://i.imgur.com/SLeKDw1.png', (error, image) => {
+    console.log(error);
+    map.addImage('garbagetruck', image);
+    line();
+  });
   buttons();
 
   /*
@@ -371,18 +443,21 @@ function buttons() {
         button.classList.add("enabled");
         map.setLayoutProperty(layerID, "visibility", "visible");
         map.setLayoutProperty(layerID + "driven", "visibility", "visible");
+        map.setLayoutProperty(layerID + "truck", "visibility", "visible");
       }
       if ($('button.layerButton.enabled').length > 0) {
         $('button.layerButton').each(function(index, element) {
           if (!$(this).hasClass('enabled')) {
             map.setLayoutProperty(element.textContent, "visibility", "none");
             map.setLayoutProperty(element.textContent + "driven", "visibility", "none");
+            map.setLayoutProperty(element.textContent + "truck", "visibility", "none");
           }
         });
       } else {
         for (let vehicleID of vehicleIDs) {
           map.setLayoutProperty(vehicleID, "visibility", "visible");
           map.setLayoutProperty(vehicleID + "driven", "visibility", "visible");
+          map.setLayoutProperty(vehicleID + "truck", "visibility", "visible");
         }
       }
     });
@@ -392,6 +467,7 @@ function buttons() {
       evt.preventDefault();
       map.setLayoutProperty(layerID, "visibility", "visible");
       map.setLayoutProperty(layerID + "driven", "visibility", "visible");
+      map.setLayoutProperty(layerID + "truck", "visibility", "visible");
 
       for (let vehicleID of vehicleIDs)
       {
@@ -399,11 +475,17 @@ function buttons() {
         {
           map.setPaintProperty(vehicleID, "line-opacity", 0.05);
           map.setPaintProperty(vehicleID + "driven", "line-opacity", 0.05)
+          map.setPaintProperty(vehicleID + "truck", "icon-opacity", 0.05)
         }
         else
         {
-          map.moveLayer(vehicleID);
-          map.moveLayer(vehicleID + "driven");
+          map.moveLayer(vehicleID, vehicleIDs[0] + "truck");
+          map.moveLayer(vehicleID + "driven", vehicleIDs[0] + "truck");
+          // Move all trucks to the top!
+          for (let i = vehicleIDs.length - 1; i >= 0; i--)
+          {
+            map.moveLayer(vehicleIDs[i] + "truck");
+          }
         }
       }
     });
@@ -417,6 +499,7 @@ function buttons() {
         {
           map.setPaintProperty(vehicleID, "line-opacity", .5);
           map.setPaintProperty(vehicleID + "driven", "line-opacity", 1)
+          map.setPaintProperty(vehicleID + "truck", "icon-opacity", 1)
         }
       }
     });
