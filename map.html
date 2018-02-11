@@ -29,17 +29,17 @@
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
-      <div class="modal-body">
-        <form>
-          <p>Submit your issue here.</p>
-          <label id='issueLabel' for='issue'>Issue:</label><input id='issue' type='text' placeholder='Garbage not picked up'><br>
-          <label id='locationLabel' for='location'>Location:</label><input id='location' type='text' placeholder='50 Main St Schenectady, NY'>
-        </form>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-primary">Submit</button>
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-      </div>
+      <form id="reportForm">
+        <div class="modal-body">
+            <p>Submit your issue here.</p>
+            <label id='issueLabel' for='issue'>Issue:</label><input id='issue' type='text' placeholder='Garbage not picked up'><br>
+            <label id='locationLabel' for='location'>Location:</label><input id='location' type='text' placeholder='800 Main Ave Schenectady, NY'>
+        </div>
+        <div class="modal-footer">
+          <input type="submit" class="btn btn-primary" value="Submit">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        </div>
+      </form>
     </div>
   </div>
 </div>
@@ -317,45 +317,6 @@ function line() {
   }
 }
 
-function buildings() {
-  // Insert the layer beneath any symbol layer.
-  var layers = map.getStyle().layers;
-
-  var labelLayerId;
-  for (var i = 0; i < layers.length; i++) {
-      if (layers[i].type === 'symbol' && layers[i].layout['text-field']) {
-          labelLayerId = layers[i].id;
-          break;
-      }
-  }
-
-  map.addLayer({
-      'id': '3d-buildings',
-      'source': 'composite',
-      'source-layer': 'building',
-      'filter': ['==', 'extrude', 'true'],
-      'type': 'fill-extrusion',
-      'minzoom': 15,
-      'paint': {
-          'fill-extrusion-color': '#aaa',
-
-          // use an 'interpolate' expression to add a smooth transition effect to the
-          // buildings as the user zooms in
-          'fi1l-extrusion-height': [
-              "interpolate", ["linear"], ["zoom"],
-              15, 0,
-              15.05, ["get", "height"]
-          ],
-          'fill-extrusion-base': [
-              "interpolate", ["linear"], ["zoom"],
-              15, 0,
-              15.05, ["get", "min_height"]
-          ],
-          'fill-extrusion-opacity': .6
-      }
-  }, labelLayerId);
-}
-
 map.on('load', function(){
   ease();
   map.loadImage('https://i.imgur.com/SLeKDw1.png', (error, image) => {
@@ -365,7 +326,7 @@ map.on('load', function(){
   });
   buttons();
 
-})
+});
 
 var allEvents = [];
 let locationSet = new Set();
@@ -574,6 +535,35 @@ function handleVisibilityChange() {
 }
 
 document.addEventListener("visibilitychange", handleVisibilityChange, false);
+
+$('#reportForm').submit(function(eventObj) {
+  var reportIssue = eventObj.target[0].value;
+  var reportLoc = eventObj.target[1].value;
+  $('#reportModal').modal('hide');
+  $.ajax({
+    method: 'GET',
+    url: `https://api.mapbox.com/geocoding/v5/mapbox.places/${reportLoc}.json`,
+    data: {
+      access_token: mapboxgl.accessToken,
+    },
+    dataType: 'json',
+    error: function(xhr, tstatus, error) {
+      console.log(error);
+      console.log(tstatus);
+      console.log(xhr);
+    }
+  }).then((data, tstatus, xhr) => {
+    var coords_longlat = data.features[0].geometry.coordinates;
+    var el = document.createElement('div');
+    el.className = 'marker';
+    // make a marker for each feature and add to the map
+    new mapboxgl.Marker(el)
+    .setLngLat(coords_longlat)
+    .setPopup(new mapboxgl.Popup({ offset: 25 }) // add popups
+    .setHTML('<h3>Report</h3><p>' + reportIssue + '</p>'))
+    .addTo(map);
+  });
+});
 
 </script>
 
