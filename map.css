@@ -153,6 +153,11 @@ nav li:active {
   border-bottom:  1px solid black;
 }
 
+.menuHeader:hover {
+  background-color: rgba(0, 0, 0, 0);
+  cursor: default;
+}
+
 li:hover > .submenu {
   display: block;
 }
@@ -184,8 +189,10 @@ li:hover > .submenu {
   transform: scale(1.06);
 }
 
-.st0 {
-  
+.helpText {
+  display: block;
+  font-size: 11pt;
+  padding-left:  .5em;
 }
 
 .autocomplete {
