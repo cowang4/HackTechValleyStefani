@@ -193,3 +193,26 @@ nav li:hover {
   padding-bottom: 5px;
   border-radius: 3px;
 }
+
+.modal-dialog {
+  margin-top: 100px;
+}
+
+#issueLabel, #locationLabel {
+  position: relative;
+  width: 70px;
+  height: auto;
+  background: #FFF;
+  display: inline;
+  margin-right: 20px;
+  top: -1px;
+}
+
+#issueLabel {
+  margin-right: 45px;
+}
+
+#issue, #location {
+  margin-bottom: 10px;
+  width: 280px;
+}
