@@ -31,7 +31,7 @@
   </nav>
   <div class="autocomplete">
     <input id='addressinput' name='addressinput' type="text" placeholder="Address.." />
-    Estimated Arrival Time: <span id="arrival_time"></span>
+    <span id='arrivalTimeLbl'>Estimated Arrival Time: </span><span id="arrival_time"></span>
   </div>
   <div id='map'></div>
     <div id="LayerButtons"></div>
@@ -84,9 +84,11 @@ var map = new mapboxgl.Map({
 });
 
 function ease() {
-  map.easeTo({bearing:0, duration:5000, pitch:50, zoom:13});
+  let duration = location.href.includes("refresh");
+  map.easeTo({bearing:0, duration: duration ? 0 : 5000, pitch:50, zoom:13});
 }
 
+var truckUpdates = [];
 function animateTruck(truckID, newCoords) {
   let x = newCoords[0][0];
   let y = newCoords[0][1];
@@ -103,13 +105,19 @@ function animateTruck(truckID, newCoords) {
 
   if (newCoords.length > 1)
   {
-    window.setTimeout(() => {
-      animateTruck(truckID, newCoords.splice(1))
-    }, 10);
+    truckUpdates.push({ "truckID": truckID, "coords": newCoords.splice(1)});
   }
 }
 
 var clock_label = $('#clockLabel');
+
+function truckUpdate() {
+  for (let truckUpdate of truckUpdates)
+    animateTruck(truckUpdate.truckID, truckUpdate.coords);
+
+  truckUpdates = [];
+  window.requestAnimationFrame(() => {truckUpdate});
+}
 
 function line() {
   const colors = ["#ff0000", "#ff6f00", "#ffdd00", "#b2ff00", "#44ff00", "#00ff2b", "#00ff99", "#00f7ff", "#0088ff", "#0019ff", "#5500ff", "#c400ff", "#ff00cc", "#ff005e"];
@@ -194,7 +202,8 @@ function line() {
         "layout": {
           "icon-image": "garbagetruck",
           "icon-allow-overlap": true,
-          "icon-size": 0.25
+          "icon-size": 0.25,
+          "icon-keep-upright": true
         }
       });
 
@@ -204,10 +213,14 @@ function line() {
     let dataIndex = 0;
     let lineUpdate = () =>
     {
-      if (clock.time() >= 54000000)
+      if (clock.time() >= 60000000)
       {
-        clock.time(39600000);
-        dataIndex = events.length - 1;
+        if (!location.href.includes("refresh"))
+          location.href = location.href + "?refresh"
+        else
+          location.reload(true);
+
+        
       }
 
       if (dataIndex === events.length - 1)
@@ -271,6 +284,7 @@ function line() {
       }
 
       window.setTimeout(lineUpdate, vehicleIDs.length * timeStagger);
+      truckUpdate();
     };
 
     window.setTimeout(lineUpdate, i * timeStagger);
@@ -334,9 +348,17 @@ map.on('load', function(){
 })
 
 var allEvents = [];
+let locationSet = new Set();
 for (let i = 0; i < vehicleIDs.length; i++)
 {
-  allEvents = allEvents.concat(GPSdata[vehicleIDs[i]]);
+  for (let oneEvent of GPSdata[vehicleIDs[i]])
+  {
+    if (locationSet.has(oneEvent.Location))
+    continue;
+
+    allEvents.push(oneEvent);
+    locationSet.add(oneEvent.Location);
+  }
 }
 
 $("#addressinput").autocomplete({
@@ -369,7 +391,7 @@ $("#addressinput").on("autocompleteselect", function(event, ui) {
   var current_time = new Date(clock.time());
   var v_id = address_event.VehicleID;
   var route = GPSdata[v_id];
-  var most_recent = route.filter(evnt => Date.parse(evnt.StartTime) > current_time)[0];
+  var most_recent = route.filter(evnt => new Date(evnt.StartTime) > current_time)[0];
   var traffic_time = null;
   var direct_time = null;
   var promises = [$.ajax({
@@ -416,6 +438,9 @@ $("#addressinput").on("autocompleteselect", function(event, ui) {
     else {
       $('#arrival_time').html(('0'+time.getHours()).slice(-2)+':'+('0'+time.getMinutes()).slice(-2)+' AM');
     }
+
+    $('#arrival_time')[0].style.display = "block";
+    $('#arrivalTimeLbl')[0].style.display = "block";
   });
 });
 

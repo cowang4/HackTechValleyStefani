@@ -6,6 +6,7 @@ body {
   margin: 0;
   padding: 0;
   font-family: 'Open Sans', sans-serif;
+  overflow: hidden;
 }
 
 .wrapper{
@@ -14,7 +15,7 @@ body {
 
 #map {
   position: absolute;
-  top: 60;
+  top: 0;
   bottom: 0;
   width: 100%;
   transition: all .2s ease-in;
@@ -90,6 +91,7 @@ label.navButton {
 }
 #navigationCB:checked ~ label{
     left:260px;
+    z-index: 999999;
 }
 #navigationCB:checked ~ #map{
     transform: translate3d(250px, 0, 0);
@@ -103,6 +105,7 @@ nav {
   height:100%;
   margin:0 0 0 -250px;
   transition: all .2s ease-in;
+  z-index: 999999;
 }
 
 nav ul{
@@ -114,12 +117,19 @@ nav ul{
     background:#7BC7CE;
     overflow:hidden;
 }
+
+a {
+  text-decoration: none;
+}
+
 nav li{
     margin:0;
     font-family: Open Sans;
     height: 2em;
     line-height: 2em;
     padding: .3em;
+    color: black;
+    text-decoration: none;
 }
 
 nav li:hover {
@@ -128,8 +138,43 @@ nav li:hover {
 }
 
 .autocomplete {
-  margin: 10 0 0 90px;
-  z-index: 99999999999;
+  position: absolute;
+  top: 10px;
+  left: 80px;
+  right: 80px;
+  display: flex;
+  z-index: 9999;
+  justify-content: center;
+}
+
+.autocomplete > span {
+  position: absolute;
+  top: 50px;
+  background-color: #2D3032;
+  color: #F8F8F8;
+  border-radius: 2px;
+  padding: 10px;
+  display: none;
+}
+
+.ui-autocomplete {
+  z-index: 99999;
+  overflow-y: auto;
+  overflow-x:  hidden;
+  max-height: 600px;
+}
+
+#arrival_time {
+  margin-top: 40px;
+}
+
+#addressinput {
+  width: 90%;
+  max-width: 300px;
+  background-color: #EEE;
+  padding: 10px;
+  border: 1px #dcdc;
+  box-shadow: 0px 2px 4px -1px rgba(0, 0, 0, 0.2), 0px 4px 5px 0px rgba(0, 0, 0, 0.14), 0px 1px 10px 0px rgba(0, 0, 0, 0.12);
 }
 
 .ui-helper-hidden-accessible {
@@ -144,4 +189,7 @@ nav li:hover {
   height: 17px;
   background: #EEE;
   color: #000;
+  text-align: center;
+  padding-bottom: 5px;
+  border-radius: 3px;
 }

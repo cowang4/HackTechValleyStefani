@@ -92,7 +92,9 @@ function Coolock(options) {
 		ctx.arc(this.size / 2, this.size / 2, 0.04 * this.size, 0, Math.PI * 2);
 		ctx.fill();
 
-		setTimeout(this.redraw.bind(this), 100);
+		document.getElementById("clockLabel").innerText = str_time(d);
+
+		setTimeout(this.redraw.bind(this), 150);
 	}
 
 	this.draw();
