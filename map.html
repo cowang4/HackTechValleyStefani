@@ -249,7 +249,7 @@ function line() {
           "line-color": color,
           "line-width": 8,
           "line-dasharray": [.01, 3],
-          "line-opacity": .5
+          "line-opacity": .2
       }
     });
 
@@ -581,7 +581,7 @@ function buttons() {
       {
         if (vehicleID != layerID)
         {
-          map.setPaintProperty(vehicleID, "line-opacity", .5);
+          map.setPaintProperty(vehicleID, "line-opacity", .2);
           map.setPaintProperty(vehicleID + "driven", "line-opacity", 1)
           map.setPaintProperty(vehicleID + "truck", "icon-opacity", 1)
         }
