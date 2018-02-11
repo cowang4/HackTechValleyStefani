@@ -44,10 +44,32 @@
 
 var vehicleIDs = Object.keys(GPSdata);
 
-var clock = Timetravel.Clock();
-clock.time(1518339600).speed(150);
+
+var clock = Timetravel.Clock({time: 32400000, speed: 150});
+clock.on("timechange", () =>
+{
+  if (this.time() > 54000000)
+    clock.time(54000000);
+});
 var coolock = new Coolock({size: 100});
 
+function compareTimes(date1, date2)
+{
+  if (date1.getHours() > date2.getHours())
+    return true;
+  if (date1.getHours() < date2.getHours())
+    return false;
+  if (date1.getMinutes() > date2.getMinutes())
+    return true;
+  if (date1.getMinutes() < date2.getMinutes())
+    return false;
+  if (date1.getSeconds() > date2.getSeconds())
+    return true;
+  if (date1.getSeconds() < date2.getSeconds())
+    return false;
+
+  return true;
+}
 
 mapboxgl.accessToken = 'pk.eyJ1IjoiY293YW5nNCIsImEiOiJjamRodHYxZHAxMHF3MnBvMWM4cmF0Y29vIn0.g8Wb-swsy8VeQOISY8iOgw';
 
@@ -67,14 +89,15 @@ function line() {
   let i = 0;
   for (let i = 0; i < vehicleIDs.length; i++)
   {
+    let vehicleID = vehicleIDs[i];
+    let events = GPSdata[vehicleIDs[i]];
+    let color = colors[i];
     let coords = [];
-    for (let vehicleEvent of GPSdata[vehicleIDs[i]])
-    {
+    for (let vehicleEvent of events)
       coords.push([vehicleEvent.Longitude, vehicleEvent.Latitude]);
-    }
 
     map.addLayer({
-      "id": vehicleIDs[i],
+      "id": vehicleID,
       "type": "line",
       "source": {
           "type": "geojson",
@@ -92,10 +115,91 @@ function line() {
           "line-cap": "round"
       },
       "paint": {
-          "line-color": colors[i],
+          "line-color": color,
+          "line-width": 8,
+          "line-dasharray": [.01, 3],
+          "line-opacity": .5
+      }
+    });
+
+    map.addLayer({
+      "id": vehicleID + "driven",
+      "type": "line",
+      "source": {
+          "type": "geojson",
+          "data": {
+              "type": "Feature",
+              "properties": {},
+              "geometry": {
+                  "type": "LineString",
+                  "coordinates": []
+              }
+          }
+      },
+      "layout": {
+          "line-join": "round",
+          "line-cap": "round"
+      },
+      "paint": {
+          "line-color": color,
           "line-width": 8
       }
     });
+
+    // timed loop for updating truck progress
+    // loops are staggered for each line so that they update at separate times
+    const timeStagger = 100;
+    let dataIndex = 0;
+    let lineUpdate = () =>
+    {
+      if (dataIndex === events.length - 1)
+      {
+        dataIndex = 0;
+        map.getSource(vehicleID + "driven").setData(
+          {
+              "type": "Feature",
+              "properties": {},
+              "geometry": {
+                  "type": "LineString",
+                  "coordinates": []
+              }
+          }
+        );
+      }
+      else
+      {
+        let update = false;
+        let currentTime = new Date(clock.time());
+        let eventTime = new Date(events[dataIndex].StartTime);
+        while (dataIndex < events.length - 1 && compareTimes(currentTime, eventTime))
+        {
+          dataIndex++;
+          eventTime = new Date(events[dataIndex].StartTime)
+          update = true;
+        }
+
+        if (update)
+        {
+          let drivenCoords = coords.slice(0, dataIndex);
+
+          map.getSource(vehicleID + "driven").setData(
+            {
+                "type": "Feature",
+                "properties": {},
+                "geometry": {
+                    "type": "LineString",
+                    "coordinates": drivenCoords
+                }
+            }
+          );
+        }
+
+      }
+
+      window.setTimeout(lineUpdate, vehicleIDs.length * timeStagger);
+    };
+
+    window.setTimeout(lineUpdate, i * timeStagger);
   }
 }
 
@@ -262,11 +366,13 @@ for (let vehicleID of vehicleIDs)
     {
       button.classList.remove("disabled");
       map.setLayoutProperty(layerID, "visibility", "visible");
+      map.setLayoutProperty(layerID + "driven", "visibility", "visible");
     }
     else
     {
       button.classList.add("disabled");
       map.setLayoutProperty(layerID, "visibility", "none");
+      map.setLayoutProperty(layerID + "driven", "visibility", "none");
     }
   });
 
@@ -276,9 +382,14 @@ for (let vehicleID of vehicleIDs)
     for (let vehicleID of vehicleIDs)
     {
       if (vehicleID != layerID)
+      {
         map.setPaintProperty(vehicleID, "line-opacity", 0.05);
-      else {
+        map.setPaintProperty(vehicleID + "driven", "line-opacity", 0.05)
+      }
+      else
+      {
         map.moveLayer(vehicleID);
+        map.moveLayer(vehicleID + "driven");
       }
     }
   });
@@ -289,7 +400,10 @@ for (let vehicleID of vehicleIDs)
     for (let vehicleID of vehicleIDs)
     {
       if (vehicleID != layerID)
-        map.setPaintProperty(vehicleID, "line-opacity", 1);
+      {
+        map.setPaintProperty(vehicleID, "line-opacity", .5);
+        map.setPaintProperty(vehicleID + "driven", "line-opacity", 1)
+      }
     }
   });
 
