@@ -123,9 +123,12 @@ a {
   text-decoration: none;
 }
 
+a:hover {
+  text-decoration: none;
+}
+
 nav li{
     font-family: Open Sans;
-    height: 2em;
     line-height: 2em;
     padding: .4em .6em;
     color: black;
@@ -140,6 +143,48 @@ nav li:hover {
 
 nav li:active {
     background-color: rgba(0, 0, 0, .15);
+}
+
+.menuHeader {
+  font-size: 14pt;
+  font-weight: bold;
+  padding: .6em;
+  border-bottom:  1px solid black;
+}
+
+li:hover > .submenu {
+  display: block;
+}
+
+.submenu {
+  display: none;
+  position: absolute;
+  top: 105px;
+  left: 250px;
+  background-color:  #7BC7CE;
+  cursor: default;
+  box-shadow: 2px 0px 4px -1px rgba(0, 0, 0, 0.11), 4px 0px 5px 0px rgba(0, 0, 0, 0.14), 1px 0 10px 0px rgba(0, 0, 0, 0.12);
+}
+
+.submenu > svg {
+  width: 200px;
+  height: 226px;
+  padding: 10px;
+}
+
+.submenu > svg > path {
+  cursor: pointer;
+  transform: scale(1);
+  transform-origin: center;
+  transition: all .2s ease-in;
+}
+
+.submenu > svg > path:hover {
+  transform: scale(1.06);
+}
+
+.st0 {
+  
 }
 
 .autocomplete {
