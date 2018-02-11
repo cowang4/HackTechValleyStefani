@@ -79,6 +79,7 @@ function ease() {
   map.easeTo({bearing:0, duration:5000, pitch:50, zoom:13});
 }
 
+var truckUpdates = [];
 function animateTruck(truckID, newCoords) {
   let x = newCoords[0][0];
   let y = newCoords[0][1];
@@ -95,10 +96,16 @@ function animateTruck(truckID, newCoords) {
 
   if (newCoords.length > 1)
   {
-    window.setTimeout(() => {
-      animateTruck(truckID, newCoords.splice(1))
-    }, 10);
+    truckUpdates.push({ "truckID": truckID, "coords": newCoords.splice(1)});
   }
+}
+
+function truckUpdate() {
+  for (let truckUpdate of truckUpdates)
+    animateTruck(truckUpdate.truckID, truckUpdate.coords);
+
+  truckUpdates = [];
+  window.requestAnimationFrame(() => {truckUpdate});
 }
 
 function line() {
@@ -194,11 +201,8 @@ function line() {
     let dataIndex = 0;
     let lineUpdate = () =>
     {
-      if (clock.time() >= 54000000)
-      {
-        clock.time(39600000);
-        dataIndex = events.length - 1;
-      }
+      if (clock.time() >= 60000000)
+        location.reload(true);
 
       if (dataIndex === events.length - 1)
       {
@@ -261,6 +265,7 @@ function line() {
       }
 
       window.setTimeout(lineUpdate, vehicleIDs.length * timeStagger);
+      truckUpdate();
     };
 
     window.setTimeout(lineUpdate, i * timeStagger);
