@@ -27,13 +27,17 @@
     </ul>
   </nav>
   <div class="autocomplete">
-  <input id='addressinput' name='addressinput' type="text" placeholder="Address.." />
+    <input id='addressinput' name='addressinput' type="text" placeholder="Address.." />
   </div>
   <div id='map'></div>
+    <div id="LayerButtons"></div>
+  </div>
 </div>
 <script src="https://code.jquery.com/jquery-3.2.1.min.js" crossorigin="anonymous"></script>
 <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 <script>
+
+var vehicleIDs = Object.keys(GPSdata);
 
 mapboxgl.accessToken = 'pk.eyJ1IjoiY293YW5nNCIsImEiOiJjamRodHYxZHAxMHF3MnBvMWM4cmF0Y29vIn0.g8Wb-swsy8VeQOISY8iOgw';
 
@@ -49,52 +53,41 @@ function ease() {
 }
 
 function line() {
-  map.addLayer({
-    "id": "route",
-    "type": "line",
-    "source": {
-        "type": "geojson",
-        "data": {
-            "type": "Feature",
-            "properties": {},
-            "geometry": {
-                "type": "LineString",
-                "coordinates": [
-                    [-122.48369693756104, 37.83381888486939],
-                    [-122.48348236083984, 37.83317489144141],
-                    [-122.48339653015138, 37.83270036637107],
-                    [-122.48356819152832, 37.832056363179625],
-                    [-122.48404026031496, 37.83114119107971],
-                    [-122.48404026031496, 37.83049717427869],
-                    [-122.48348236083984, 37.829920943955045],
-                    [-122.48356819152832, 37.82954808664175],
-                    [-122.48507022857666, 37.82944639795659],
-                    [-122.48610019683838, 37.82880236636284],
-                    [-122.48695850372314, 37.82931081282506],
-                    [-122.48700141906738, 37.83080223556934],
-                    [-122.48751640319824, 37.83168351665737],
-                    [-122.48803138732912, 37.832158048267786],
-                    [-122.48888969421387, 37.83297152392784],
-                    [-122.48987674713133, 37.83263257682617],
-                    [-122.49043464660643, 37.832937629287755],
-                    [-122.49125003814696, 37.832429207817725],
-                    [-122.49163627624512, 37.832564787218985],
-                    [-122.49223709106445, 37.83337825839438],
-                    [-122.49378204345702, 37.83368330777276]
-                ]
-            }
-        }
-    },
-    "layout": {
-        "line-join": "round",
-        "line-cap": "round"
-    },
-    "paint": {
-        "line-color": "#888",
-        "line-width": 8
+  const colors = ["#ff0000", "#ff6f00", "#ffdd00", "#b2ff00", "#44ff00", "#00ff2b", "#00ff99", "#00f7ff", "#0088ff", "#0019ff", "#5500ff", "#c400ff", "#ff00cc", "#ff005e"];
+  let i = 0;
+  for (let i = 0; i < vehicleIDs.length; i++)
+  {
+    let coords = [];
+    for (let vehicleEvent of GPSdata[vehicleIDs[i]])
+    {
+      coords.push([vehicleEvent.Longitude, vehicleEvent.Latitude]);
     }
-  });
 
+    map.addLayer({
+      "id": vehicleIDs[i],
+      "type": "line",
+      "source": {
+          "type": "geojson",
+          "data": {
+              "type": "Feature",
+              "properties": {},
+              "geometry": {
+                  "type": "LineString",
+                  "coordinates": coords
+              }
+          }
+      },
+      "layout": {
+          "line-join": "round",
+          "line-cap": "round"
+      },
+      "paint": {
+          "line-color": colors[i],
+          "line-width": 8
+      }
+    });
+    i++;
+  }
 }
 
 map.on('load', function(){
@@ -127,11 +120,39 @@ map.on('load', function(){
 $( "#addressinput" ).autocomplete({
   source: function(request, response) {
     var term = request.term;
-    var result = GPSdata.filter(
+    var result = GPSdata;
 
     response(result);
   },
 });
+
+// Add toggleable layer buttons
+let layerButtons = document.getElementById("LayerButtons");
+for (let vehicleID of vehicleIDs)
+{
+  let button = document.createElement("button");
+  button.type = "button";
+  button.classList.add("layerButton");
+  button.textContent = vehicleID;
+
+  button.addEventListener("click", (evt) => {
+    let layerID = button.textContent;
+    evt.preventDefault();
+    if (button.classList.contains("disabled"))
+    {
+      button.classList.remove("disabled");
+      map.setLayoutProperty(layerID, "visibility", "none");
+    }
+    else
+    {
+      button.classList.add("disabled");
+      map.setLayoutProperty(layerID, "visibility", "visible");
+    }
+  });
+
+  layerButtons
+}
+
 </script>
 
 </body>
