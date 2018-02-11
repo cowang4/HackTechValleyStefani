@@ -31,7 +31,7 @@
   </nav>
   <div class="autocomplete">
     <input id='addressinput' name='addressinput' type="text" placeholder="Address.." />
-    Estimated Arrival Time: <span id="arrival_time"></span>
+    <span id='arrivalTimeLbl'>Estimated Arrival Time: </span><span id="arrival_time"></span>
   </div>
   <div id='map'></div>
     <div id="LayerButtons"></div>
@@ -76,7 +76,8 @@ var map = new mapboxgl.Map({
 });
 
 function ease() {
-  map.easeTo({bearing:0, duration:5000, pitch:50, zoom:13});
+  let duration = location.href.includes("refresh");
+  map.easeTo({bearing:0, duration: duration ? 0 : 5000, pitch:50, zoom:13});
 }
 
 var truckUpdates = [];
@@ -191,7 +192,8 @@ function line() {
         "layout": {
           "icon-image": "garbagetruck",
           "icon-allow-overlap": true,
-          "icon-size": 0.25
+          "icon-size": 0.25,
+          "icon-keep-upright": true
         }
       });
 
@@ -202,7 +204,12 @@ function line() {
     let lineUpdate = () =>
     {
       if (clock.time() >= 60000000)
-        location.reload(true);
+      {
+        if (!location.href.includes("refresh"))
+          location.href = location.href + "?refresh"
+        else
+          location.reload(true);
+      }
 
       if (dataIndex === events.length - 1)
       {
@@ -259,9 +266,6 @@ function line() {
 
           animateTruck(vehicleID + "truck", coords.slice(startingIndex + 1, dataIndex + 1));
         }
-
-        $('#clockLabel').html(str_time(currentTime));
-
       }
 
       window.setTimeout(lineUpdate, vehicleIDs.length * timeStagger);
@@ -329,9 +333,17 @@ map.on('load', function(){
 })
 
 var allEvents = [];
+let locationSet = new Set();
 for (let i = 0; i < vehicleIDs.length; i++)
 {
-  allEvents = allEvents.concat(GPSdata[vehicleIDs[i]]);
+  for (let oneEvent of GPSdata[vehicleIDs[i]])
+  {
+    if (locationSet.has(oneEvent.Location))
+    continue;
+
+    allEvents.push(oneEvent);
+    locationSet.add(oneEvent.Location);
+  }
 }
 
 $("#addressinput").autocomplete({
@@ -360,10 +372,10 @@ $("#addressinput").on("autocompleteselect", function(event, ui) {
 
   map.setCenter([address_event.Longitude, address_event.Latitude]);
 
-  var current_time = new Date('2018-2-1T05:00:00');
+  var current_time = new Date(clock.time());
   var v_id = address_event.VehicleID;
   var route = GPSdata[v_id];
-  var most_recent = route.filter(evnt => Date.parse(evnt.StartTime) > current_time)[0];
+  var most_recent = route.filter(evnt => new Date(evnt.StartTime) > current_time)[0];
   var traffic_time = null;
   var direct_time = null;
   var promises = [$.ajax({
@@ -410,6 +422,9 @@ $("#addressinput").on("autocompleteselect", function(event, ui) {
     else {
       $('#arrival_time').html(('0'+time.getHours()).slice(-2)+':'+('0'+time.getMinutes()).slice(-2)+' AM');
     }
+
+    $('#arrival_time')[0].style.display = "block";
+    $('#arrivalTimeLbl')[0].style.display = "block";
   });
 });
 
