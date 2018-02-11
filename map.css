@@ -5,6 +5,7 @@
 body {
   margin: 0;
   padding: 0;
+  font-family: 'Open Sans', sans-serif;
 }
 
 .wrapper{
@@ -142,4 +143,5 @@ nav li:hover {
   width: 80px;
   height: 17px;
   background: #EEE;
+  color: #000;
 }

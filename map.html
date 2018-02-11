@@ -35,9 +35,9 @@
   </div>
   <div id='map'></div>
     <div id="LayerButtons"></div>
-    <div id="coolockWrapper">
+    <a id='clocks' href='#'><div id="coolockWrapper">
       <label id="clockLabel">00:00 AM</label>
-    </div>
+    </div></a>
   </div>
 </div>
 <script>
@@ -66,11 +66,19 @@ function compareTimes(date1, date2)
   return true;
 }
 
+$('#clocks').on('click', function() {
+  if (clock.isStopped()) {
+    clock.start();
+  } else {
+    clock.stop();
+  }
+});
+
 mapboxgl.accessToken = 'pk.eyJ1IjoiY293YW5nNCIsImEiOiJjamRodHYxZHAxMHF3MnBvMWM4cmF0Y29vIn0.g8Wb-swsy8VeQOISY8iOgw';
 
 var map = new mapboxgl.Map({
   container: 'map',
-  style: 'mapbox://styles/mapbox/light-v9',
+  style: 'mapbox://styles/mapbox/light-v9?optimize=true',
   center: [-73.9409, 42.8144],
   zoom: 3
 });
@@ -100,6 +108,8 @@ function animateTruck(truckID, newCoords) {
     }, 10);
   }
 }
+
+var clock_label = $('#clockLabel');
 
 function line() {
   const colors = ["#ff0000", "#ff6f00", "#ffdd00", "#b2ff00", "#44ff00", "#00ff2b", "#00ff99", "#00f7ff", "#0088ff", "#0019ff", "#5500ff", "#c400ff", "#ff00cc", "#ff005e"];
@@ -256,7 +266,7 @@ function line() {
           animateTruck(vehicleID + "truck", coords.slice(startingIndex + 1, dataIndex + 1));
         }
 
-        $('#clockLabel').html(str_time(currentTime));
+        clock_label.html(str_time(currentTime));
 
       }
 
@@ -297,7 +307,7 @@ function buildings() {
 
           // use an 'interpolate' expression to add a smooth transition effect to the
           // buildings as the user zooms in
-          'fill-extrusion-height': [
+          'fi1l-extrusion-height': [
               "interpolate", ["linear"], ["zoom"],
               15, 0,
               15.05, ["get", "height"]
@@ -330,6 +340,7 @@ for (let i = 0; i < vehicleIDs.length; i++)
 }
 
 $("#addressinput").autocomplete({
+  minLength: 1,
   source: function(request, response) {
     var term = request.term;
     var matches = allEvents.filter(evnt => evnt.Location.toLowerCase().includes(term.toLowerCase()));
@@ -355,7 +366,7 @@ $("#addressinput").on("autocompleteselect", function(event, ui) {
 
   map.setCenter([address_event.Longitude, address_event.Latitude]);
 
-  var current_time = new Date('2018-2-1T05:00:00');
+  var current_time = new Date(clock.time());
   var v_id = address_event.VehicleID;
   var route = GPSdata[v_id];
   var most_recent = route.filter(evnt => Date.parse(evnt.StartTime) > current_time)[0];
@@ -483,6 +494,7 @@ function buttons() {
       if ($('button.layerButton.enabled').length > 0 && !$(button).hasClass('enabled')) {
         map.setLayoutProperty(layerID, "visibility", "none");
         map.setLayoutProperty(layerID + "driven", "visibility", "none");
+        map.setLayoutProperty(vehicleID + "truck", "visibility", "none");
       }
       for (let vehicleID of vehicleIDs)
       {
@@ -506,9 +518,6 @@ $('#navigationCB').click(function() {
   else {
     $('label.navButton').html('&#11166;');
   }
-});
-
-$(document).ready(function() {
 });
 
 </script>
