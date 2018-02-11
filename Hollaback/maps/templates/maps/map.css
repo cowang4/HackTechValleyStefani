@@ -55,6 +55,12 @@ body {
   background-color:  lightgray;
 }
 
+#coolockWrapper {
+  position: absolute;
+  bottom: 20px;
+  right: 5px;
+}
+
 label{
     display:block;
     background:#000;

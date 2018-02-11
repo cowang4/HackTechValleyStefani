@@ -4,12 +4,15 @@
     <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
     <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
     <script src='GPSdata.js'></script>
+    <script src='timetravel.js'></script>
+    <script src='coolock.js'></script>
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css">
     <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.44.0/mapbox-gl.js'></script>
     <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.44.0/mapbox-gl.css' rel='stylesheet' />
     <script src='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-directions/v3.1.1/mapbox-gl-directions.js'></script>
     <link rel='stylesheet' href='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-directions/v3.1.1/mapbox-gl-directions.css' type='text/css' />
     <link rel='stylesheet' href='map.css' type='text/css' />
+    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.44.0/mapbox-gl.js'></script>
 </head>
 <body>
 <div class="wrapper">
@@ -31,6 +34,7 @@
   </div>
   <div id='map'></div>
     <div id="LayerButtons"></div>
+    <div id="coolockWrapper"></div>
   </div>
 </div>
 <script src="https://code.jquery.com/jquery-3.2.1.min.js" crossorigin="anonymous"></script>
@@ -38,6 +42,11 @@
 <script>
 
 var vehicleIDs = Object.keys(GPSdata);
+
+var clock = Timetravel.Clock();
+clock.time(1518339600).speed(150);
+var coolock = new Coolock({size: 100});
+
 
 mapboxgl.accessToken = 'pk.eyJ1IjoiY293YW5nNCIsImEiOiJjamRodHYxZHAxMHF3MnBvMWM4cmF0Y29vIn0.g8Wb-swsy8VeQOISY8iOgw';
 
@@ -86,7 +95,6 @@ function line() {
           "line-width": 8
       }
     });
-    i++;
   }
 }
 
@@ -156,7 +164,10 @@ for (let vehicleID of vehicleIDs)
     for (let vehicleID of vehicleIDs)
     {
       if (vehicleID != layerID)
-        map.setPaintProperty(vehicleID, "line-opacity", 0.1);
+        map.setPaintProperty(vehicleID, "line-opacity", 0.05);
+      else {
+        map.moveLayer(vehicleID);
+      }
     }
   });
 
