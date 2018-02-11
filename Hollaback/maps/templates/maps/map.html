@@ -236,10 +236,7 @@ $("#addressinput").on("autocompleteselect", function(event, ui) {
 
   Promise.all(promises).then(() => {
     var delay_time = traffic_time - direct_time;
-    console.log(delay_time);
-    console.log(time);
     time.setSeconds(time.getSeconds()+delay_time);
-    console.log(time);
     if (time.getHours() >= 12) {
       $('#arrival_time').html(('0'+time.getHours()).slice(-2)+':'+('0'+time.getMinutes()).slice(-2)+' PM');
     }
