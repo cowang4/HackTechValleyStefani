@@ -135,3 +135,12 @@ nav li:hover {
 .ui-helper-hidden-accessible {
   display: none;
 }
+
+#clockLabel {
+  position: relative;
+  top: -5px;
+  left: 7px;
+  width: 80px;
+  height: 17px;
+  background: #EEE;
+}

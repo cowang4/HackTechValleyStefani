@@ -24,9 +24,9 @@
   </label>
   <nav>
     <ul>
-      <li>
-        Notifications
-      </li>
+      <a href='http://www.cityofschenectady.com/list.aspx' target='_blank'><li>Notifications</li></a>
+      <a href='http://cityofschenectady.com/531/Waste-Collection-Schedules' target='_blank'><li>District Schedules</li></a>
+      <a href='https://www.waze.com/ccp' target='_blank'><li>Waze CCP</li></a>
     </ul>
   </nav>
   <div class="autocomplete">
@@ -35,7 +35,9 @@
   </div>
   <div id='map'></div>
     <div id="LayerButtons"></div>
-    <div id="coolockWrapper"></div>
+    <div id="coolockWrapper">
+      <label id="clockLabel">00:00 AM</label>
+    </div>
   </div>
 </div>
 <script>
@@ -44,11 +46,6 @@ var vehicleIDs = Object.keys(GPSdata);
 
 
 var clock = Timetravel.Clock({time: 32400000, speed: 150});
-clock.on("timechange", () =>
-{
-  if (this.time() > 54000000)
-    clock.time(54000000);
-});
 var coolock = new Coolock({size: 100});
 
 function compareTimes(date1, date2)
@@ -192,6 +189,8 @@ function line() {
           );
         }
 
+        $('#clockLabel').html(str_time(currentTime));
+
       }
 
       window.setTimeout(lineUpdate, vehicleIDs.length * timeStagger);
@@ -245,27 +244,6 @@ map.on('load', function(){
   line();
   buttons();
 
-  /*
-  var directionsObj = new MapboxDirections({
-    accessToken: mapboxgl.accessToken,
-    profile: 'driving',
-    congestion: false,
-    interactive: false,
-    geometries: 'geojson',
-    alternatives: false,
-    controls: {
-      //inputs: false,
-      //instructions: false,
-      //profileSwitcher: false,
-    },
-  });
-  directionsObj.on('route', function({route}) {
-    console.log(route);
-  });
-  directionsObj.setOrigin([-122.48369693756104, 37.83381888486939]);
-  directionsObj.setDestination([-122.49378204345702, 37.83368330777276]);
-  map.addControl(directionsObj, 'top-left');
-  */
 })
 
 var allEvents = [];
@@ -285,16 +263,20 @@ $("#addressinput").autocomplete({
 
 var address_event = null;
 
+function str_time(time) {
+  var str = ('0'+(time.getHours() > 12 ? time.getHours()%12 : time.getHours())).slice(-2);
+  str += ':'+('0'+time.getMinutes()).slice(-2);
+  str += time.getHours() > 11 ? ' PM' : ' AM';
+  return str;
+}
+
 $("#addressinput").on("autocompleteselect", function(event, ui) {
   var val = ui.item.value;
   address_event = allEvents.filter(evnt => evnt.Location == val)[0];
   var time = new Date(Date.parse(address_event.StartTime));
-  if (time.getHours() >= 12) {
-    $('#arrival_time').html(time.getHours()+':'+time.getMinutes()+' PM');
-  }
-  else {
-    $('#arrival_time').html(('0'+time.getHours()).slice(-2)+':'+('0'+time.getMinutes()).slice(-2)+' AM');
-  }
+  $('#arrival_time').html(str_time(time));
+
+  map.setCenter([address_event.Longitude, address_event.Latitude]);
 
   var current_time = new Date('2018-2-1T05:00:00');
   var v_id = address_event.VehicleID;
@@ -411,6 +393,10 @@ function buttons() {
     button.addEventListener("mouseleave", (evt) => {
       let layerID = button.textContent;
       evt.preventDefault();
+      if ($('button.layerButton.enabled').length > 0 && !$(button).hasClass('enabled')) {
+        map.setLayoutProperty(layerID, "visibility", "none");
+        map.setLayoutProperty(layerID + "driven", "visibility", "none");
+      }
       for (let vehicleID of vehicleIDs)
       {
         if (vehicleID != layerID)
@@ -428,11 +414,9 @@ function buttons() {
 $('#navigationCB').click(function() {
   if ($(this)[0].checked == true) {
     $('label.navButton').html('&#11164;');
-    console.log("checked");
   }
   else {
     $('label.navButton').html('&#11166;');
-    console.log("unchecked");
   }
 });
 
