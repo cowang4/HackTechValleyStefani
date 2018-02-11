@@ -243,6 +243,7 @@ function buildings() {
 map.on('load', function(){
   ease();
   line();
+  buttons();
 
   /*
   var directionsObj = new MapboxDirections({
@@ -348,64 +349,80 @@ $("#addressinput").on("autocompleteselect", function(event, ui) {
   });
 });
 
-// Add toggleable layer buttons
-let layerButtons = document.getElementById("LayerButtons");
-for (let vehicleID of vehicleIDs)
-{
-  let button = document.createElement("button");
-  button.type = "button";
-  button.classList.add("layerButton");
-  button.textContent = vehicleID;
+function buttons() {
+  // Add toggleable layer buttons
+  let layerButtons = document.getElementById("LayerButtons");
+  for (let vehicleID of vehicleIDs)
+  {
+    let button = document.createElement("button");
+    button.type = "button";
+    button.classList.add("layerButton");
+    button.textContent = vehicleID;
 
-  button.addEventListener("click", (evt) => {
-    let layerID = button.textContent;
-    evt.preventDefault();
-    if (button.classList.contains("disabled"))
-    {
-      button.classList.remove("disabled");
-      map.setLayoutProperty(layerID, "visibility", "visible");
-      map.setLayoutProperty(layerID + "driven", "visibility", "visible");
-    }
-    else
-    {
-      button.classList.add("disabled");
-      map.setLayoutProperty(layerID, "visibility", "none");
-      map.setLayoutProperty(layerID + "driven", "visibility", "none");
-    }
-  });
-
-  button.addEventListener("mouseenter", (evt) => {
-    let layerID = button.textContent;
-    evt.preventDefault();
-    for (let vehicleID of vehicleIDs)
-    {
-      if (vehicleID != layerID)
+    button.addEventListener("click", (evt) => {
+      let layerID = button.textContent;
+      evt.preventDefault();
+      if (button.classList.contains("enabled"))
       {
-        map.setPaintProperty(vehicleID, "line-opacity", 0.05);
-        map.setPaintProperty(vehicleID + "driven", "line-opacity", 0.05)
+        button.classList.remove("enabled");
       }
       else
       {
-        map.moveLayer(vehicleID);
-        map.moveLayer(vehicleID + "driven");
+        button.classList.add("enabled");
+        map.setLayoutProperty(layerID, "visibility", "visible");
+        map.setLayoutProperty(layerID + "driven", "visibility", "visible");
       }
-    }
-  });
+      if ($('button.layerButton.enabled').length > 0) {
+        $('button.layerButton').each(function(index, element) {
+          if (!$(this).hasClass('enabled')) {
+            map.setLayoutProperty(element.textContent, "visibility", "none");
+            map.setLayoutProperty(element.textContent + "driven", "visibility", "none");
+          }
+        });
+      } else {
+        for (let vehicleID of vehicleIDs) {
+          map.setLayoutProperty(vehicleID, "visibility", "visible");
+          map.setLayoutProperty(vehicleID + "driven", "visibility", "visible");
+        }
+      }
+    });
 
-  button.addEventListener("mouseleave", (evt) => {
-    let layerID = button.textContent;
-    evt.preventDefault();
-    for (let vehicleID of vehicleIDs)
-    {
-      if (vehicleID != layerID)
+    button.addEventListener("mouseenter", (evt) => {
+      let layerID = button.textContent;
+      evt.preventDefault();
+      map.setLayoutProperty(layerID, "visibility", "visible");
+      map.setLayoutProperty(layerID + "driven", "visibility", "visible");
+
+      for (let vehicleID of vehicleIDs)
       {
-        map.setPaintProperty(vehicleID, "line-opacity", .5);
-        map.setPaintProperty(vehicleID + "driven", "line-opacity", 1)
+        if (vehicleID != layerID)
+        {
+          map.setPaintProperty(vehicleID, "line-opacity", 0.05);
+          map.setPaintProperty(vehicleID + "driven", "line-opacity", 0.05)
+        }
+        else
+        {
+          map.moveLayer(vehicleID);
+          map.moveLayer(vehicleID + "driven");
+        }
       }
-    }
-  });
+    });
 
-  layerButtons.appendChild(button);
+    button.addEventListener("mouseleave", (evt) => {
+      let layerID = button.textContent;
+      evt.preventDefault();
+      for (let vehicleID of vehicleIDs)
+      {
+        if (vehicleID != layerID)
+        {
+          map.setPaintProperty(vehicleID, "line-opacity", .5);
+          map.setPaintProperty(vehicleID + "driven", "line-opacity", 1)
+        }
+      }
+    });
+
+    layerButtons.appendChild(button);
+  }
 }
 
 $('#navigationCB').click(function() {

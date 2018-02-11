@@ -1,5 +1,5 @@
-.disabled {
-  background-color: grey;
+.enabled {
+  background-color: blue;
 }
 
 body {
